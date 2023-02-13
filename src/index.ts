@@ -20,6 +20,16 @@
    res.json(cars);
 })
 
+app.get('/my-cars', (req, res) => {
+   let foundCarsQuery = db.cars;
+
+   if (req.query.title) {
+       foundCarsQuery = foundCarsQuery.filter(u => u.title.indexOf(req.query.title as string) > -1);
+   }
+
+   res.json(foundCarsQuery);
+})
+
  app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
  });
