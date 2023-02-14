@@ -1,6 +1,6 @@
  import express from 'express'
 
- const app = express();
+ export const app = express();
  const port = 3000;
  
  const jsonBodyMiddleware = express.json();
@@ -11,6 +11,10 @@
    {id: 2, title: 'Opel Vectra A'},
    {id: 3, title: 'My new car'}]
  }
+
+app.get('/', (req, res) => {
+   res.send('This is the home page')
+})
 
  app.get('/my-cars/:id', (req, res) => {
    const cars = db.cars.find(i => i.id === +req.params.id);
@@ -30,7 +34,7 @@ app.get('/my-cars', (req, res) => {
        foundCars = foundCars.filter(u => u.title.indexOf(req.query.title as string) > -1);
    }
 
-   res.status(201).json(foundCars);
+   res.status(200).json(foundCars);
 })
 
 app.post('/my-cars', (req,res) => {
@@ -45,16 +49,21 @@ app.post('/my-cars', (req,res) => {
    }
 
    db.cars.push(addedCar)
-   res.json(addedCar);
+   res.status(201).json(addedCar);
+})
+
+app.delete('/__test__/data', (req, res) => {
+   db.cars = [];
+   res.sendStatus(204);
 })
 
 app.delete('/my-cars/:id', (req, res) => {
    db.cars = db.cars.filter(i => i.id !== +req.params.id)
-   if((db.cars.length - 1) < +req.params.id) {
-      res.sendStatus(404)
+   if((db.cars.length - 1) <= +req.params.id) {
+      res.sendStatus(204)
       return;
    }
-   res.sendStatus(204)
+   res.sendStatus(404)
 })
 
 app.put('/my-cars/:id', (req,res) => {

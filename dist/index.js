@@ -13,6 +13,9 @@ const db = {
         { id: 2, title: 'Opel Vectra A' },
         { id: 3, title: 'My new car' }]
 };
+app.get('/', (req, res) => {
+    res.send('This is the home page');
+});
 app.get('/my-cars/:id', (req, res) => {
     const cars = db.cars.find(i => i.id === +req.params.id);
     if (!cars) {
