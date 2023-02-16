@@ -17,6 +17,13 @@ const db = {
 exports.app.get('/', (req, res) => {
     res.send('This is the home page');
 });
+exports.app.get('/my-cars', (req, res) => {
+    let foundCars = db.cars;
+    if (req.query.title) {
+        foundCars = foundCars.filter(u => u.title.indexOf(req.query.title) > -1);
+    }
+    res.status(200).json(foundCars);
+});
 exports.app.get('/my-cars/:id', (req, res) => {
     const cars = db.cars.find(i => i.id === +req.params.id);
     if (!cars) {
@@ -24,13 +31,6 @@ exports.app.get('/my-cars/:id', (req, res) => {
         return;
     }
     res.json(cars);
-});
-exports.app.get('/my-cars', (req, res) => {
-    let foundCars = db.cars;
-    if (req.query.title) {
-        foundCars = foundCars.filter(u => u.title.indexOf(req.query.title) > -1);
-    }
-    res.status(200).json(foundCars);
 });
 exports.app.post('/my-cars', (req, res) => {
     if (!req.body.title) {
@@ -43,10 +43,6 @@ exports.app.post('/my-cars', (req, res) => {
     };
     db.cars.push(addedCar);
     res.status(201).json(addedCar);
-});
-exports.app.delete('/__test__/data', (req, res) => {
-    db.cars = [];
-    res.sendStatus(204);
 });
 exports.app.delete('/my-cars/:id', (req, res) => {
     db.cars = db.cars.filter(i => i.id !== +req.params.id);
@@ -67,6 +63,10 @@ exports.app.put('/my-cars/:id', (req, res) => {
         return;
     }
     updatedCar.title = req.body.title;
+    res.sendStatus(204);
+});
+exports.app.delete('/__test__/data', (req, res) => {
+    db.cars = [];
     res.sendStatus(204);
 });
 exports.app.listen(port, () => {

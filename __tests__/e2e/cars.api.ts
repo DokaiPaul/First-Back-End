@@ -62,7 +62,7 @@ describe('/my-cars', () => {
     it(`shouldn't update the course that not exist`, async () => {
         await request(app)
             .put('/my-cars/2')
-            .send({title: 'Mitshubishe EVO'})
+            .send({title: 'Subaru Impreza'})
             .expect(404)
     })
 

@@ -1,4 +1,11 @@
- import express from 'express'
+import express, { Response } from 'express';
+import { RequestWithBody, RequestWithParams, RequestWithQuery, RequestWithParamsAndBody } from './types';
+import { Request } from 'supertest';
+import { GetQueryCarModel } from './models/GetQueryCarModel';
+import { CarsAPImodel } from './models/CarApiModel';
+import { CreateCarModel } from './models/CreateCarModel';
+import { UpdateCarModel } from './models/UpdateCarModel';
+import { GetURIcarModel } from './models/GetURIcarModel';
 
  export const app = express();
  const port = 3000;
@@ -6,7 +13,12 @@
  const jsonBodyMiddleware = express.json();
  app.use(jsonBodyMiddleware)
 
- const db = {
+type CarsType = {
+   id: number
+   title: string
+}
+
+ const db: {cars : CarsType[]} = {
    cars: [{id: 1, title: 'Golf 5'},
    {id: 2, title: 'Opel Vectra A'},
    {id: 3, title: 'My new car'}]
@@ -16,7 +28,19 @@ app.get('/', (req, res) => {
    res.send('This is the home page')
 })
 
- app.get('/my-cars/:id', (req, res) => {
+app.get('/my-cars', (req: RequestWithQuery<GetQueryCarModel>, 
+                     res: Response<CarsAPImodel[]>) => {
+   let foundCars = db.cars;
+
+   if (req.query.title) {
+       foundCars = foundCars.filter(u => u.title.indexOf(req.query.title as string) > -1);
+   }
+
+   res.status(200).json(foundCars);
+})
+
+ app.get('/my-cars/:id', (req: RequestWithParams<GetURIcarModel>, 
+                          res: Response<CarsAPImodel>) => {
    const cars = db.cars.find(i => i.id === +req.params.id);
 
    if(!cars) {
@@ -27,17 +51,8 @@ app.get('/', (req, res) => {
    res.json(cars);
 })
 
-app.get('/my-cars', (req, res) => {
-   let foundCars = db.cars;
-
-   if (req.query.title) {
-       foundCars = foundCars.filter(u => u.title.indexOf(req.query.title as string) > -1);
-   }
-
-   res.status(200).json(foundCars);
-})
-
-app.post('/my-cars', (req,res) => {
+app.post('/my-cars', (req: RequestWithBody<CreateCarModel>,
+                      res: Response<CarsType>) => {
    if(!req.body.title) {
       res.sendStatus(400);
       return;
@@ -52,12 +67,7 @@ app.post('/my-cars', (req,res) => {
    res.status(201).json(addedCar);
 })
 
-app.delete('/__test__/data', (req, res) => {
-   db.cars = [];
-   res.sendStatus(204);
-})
-
-app.delete('/my-cars/:id', (req, res) => {
+app.delete('/my-cars/:id', (req: RequestWithParams<GetURIcarModel>, res) => {
    db.cars = db.cars.filter(i => i.id !== +req.params.id)
    if((db.cars.length - 1) <= +req.params.id) {
       res.sendStatus(204)
@@ -66,7 +76,7 @@ app.delete('/my-cars/:id', (req, res) => {
    res.sendStatus(404)
 })
 
-app.put('/my-cars/:id', (req,res) => {
+app.put('/my-cars/:id', (req: RequestWithParamsAndBody<GetURIcarModel,UpdateCarModel>, res) => {
    if(!req.body.title) {
       res.sendStatus(400);
       return;
@@ -78,6 +88,11 @@ app.put('/my-cars/:id', (req,res) => {
       return;
    }
    updatedCar.title = req.body.title;
+   res.sendStatus(204);
+})
+
+app.delete('/__test__/data', (req, res) => {
+   db.cars = [];
    res.sendStatus(204);
 })
 
