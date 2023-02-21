@@ -1,4 +1,4 @@
-import { Express, Response } from 'express';
+import express, { Express, Response } from 'express';
 import { RequestWithBody, RequestWithParams, RequestWithQuery, RequestWithParamsAndBody } from '../types';
 import { Request } from 'supertest';
 import { GetQueryCarModel } from '../models/GetQueryCarModel';
@@ -9,9 +9,9 @@ import { GetURIcarModel } from '../models/GetURIcarModel';
 import {CarsType, db, DBType} from '../db/db'
 
 
-export const addCarsRoutes = (app: Express, db: DBType) => {
-     
-     app.get('/my-cars', (req: RequestWithQuery<GetQueryCarModel>, 
+export const getCarsRouter = (db: DBType) => {
+     const carsRouter = express.Router()
+     carsRouter.get('/', (req: RequestWithQuery<GetQueryCarModel>, 
                           res: Response<CarsAPImodel[]>) => {
         let foundCars = db.cars;
      
@@ -22,7 +22,7 @@ export const addCarsRoutes = (app: Express, db: DBType) => {
         res.status(200).json(foundCars);
      })
      
-      app.get('/my-cars/:id', (req: RequestWithParams<GetURIcarModel>, 
+     carsRouter.get('/:id', (req: RequestWithParams<GetURIcarModel>, 
                                res: Response<CarsAPImodel>) => {
         const cars = db.cars.find(i => i.id === +req.params.id);
      
@@ -34,7 +34,7 @@ export const addCarsRoutes = (app: Express, db: DBType) => {
         res.json(cars);
      })
      
-     app.post('/my-cars', (req: RequestWithBody<CreateCarModel>,
+     carsRouter.post('/', (req: RequestWithBody<CreateCarModel>,
                            res: Response<CarsType>) => {
         if(!req.body.title) {
            res.sendStatus(400);
@@ -50,7 +50,7 @@ export const addCarsRoutes = (app: Express, db: DBType) => {
         res.status(201).json(addedCar);
      })
      
-     app.delete('/my-cars/:id', (req: RequestWithParams<GetURIcarModel>, res) => {
+     carsRouter.delete(':id', (req: RequestWithParams<GetURIcarModel>, res) => {
         db.cars = db.cars.filter(i => i.id !== +req.params.id)
         if((db.cars.length - 1) <= +req.params.id) {
            res.sendStatus(204)
@@ -59,7 +59,7 @@ export const addCarsRoutes = (app: Express, db: DBType) => {
         res.sendStatus(404)
      })
      
-     app.put('/my-cars/:id', (req: RequestWithParamsAndBody<GetURIcarModel,UpdateCarModel>, res) => {
+     carsRouter.put('/:id', (req: RequestWithParamsAndBody<GetURIcarModel,UpdateCarModel>, res) => {
         if(!req.body.title) {
            res.sendStatus(400);
            return;
@@ -73,4 +73,6 @@ export const addCarsRoutes = (app: Express, db: DBType) => {
         updatedCar.title = req.body.title;
         res.sendStatus(204);
      })
+
+     return carsRouter
 }

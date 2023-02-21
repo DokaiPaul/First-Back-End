@@ -1,15 +1,20 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addCarsRoutes = void 0;
-const addCarsRoutes = (app, db) => {
-    app.get('/my-cars', (req, res) => {
+exports.getCarsRouter = void 0;
+const express_1 = __importDefault(require("express"));
+const getCarsRouter = (db) => {
+    const carsRouter = express_1.default.Router();
+    carsRouter.get('/', (req, res) => {
         let foundCars = db.cars;
         if (req.query.title) {
             foundCars = foundCars.filter(u => u.title.indexOf(req.query.title) > -1);
         }
         res.status(200).json(foundCars);
     });
-    app.get('/my-cars/:id', (req, res) => {
+    carsRouter.get('/:id', (req, res) => {
         const cars = db.cars.find(i => i.id === +req.params.id);
         if (!cars) {
             res.sendStatus(404);
@@ -17,7 +22,7 @@ const addCarsRoutes = (app, db) => {
         }
         res.json(cars);
     });
-    app.post('/my-cars', (req, res) => {
+    carsRouter.post('/', (req, res) => {
         if (!req.body.title) {
             res.sendStatus(400);
             return;
@@ -29,7 +34,7 @@ const addCarsRoutes = (app, db) => {
         db.cars.push(addedCar);
         res.status(201).json(addedCar);
     });
-    app.delete('/my-cars/:id', (req, res) => {
+    carsRouter.delete(':id', (req, res) => {
         db.cars = db.cars.filter(i => i.id !== +req.params.id);
         if ((db.cars.length - 1) <= +req.params.id) {
             res.sendStatus(204);
@@ -37,7 +42,7 @@ const addCarsRoutes = (app, db) => {
         }
         res.sendStatus(404);
     });
-    app.put('/my-cars/:id', (req, res) => {
+    carsRouter.put('/:id', (req, res) => {
         if (!req.body.title) {
             res.sendStatus(400);
             return;
@@ -50,5 +55,6 @@ const addCarsRoutes = (app, db) => {
         updatedCar.title = req.body.title;
         res.sendStatus(204);
     });
+    return carsRouter;
 };
-exports.addCarsRoutes = addCarsRoutes;
+exports.getCarsRouter = getCarsRouter;
